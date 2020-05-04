@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "archiver": "^4.0.1",
+    "clasp": "^1.0.0",
     "mongodb": "^3.5.7",
     "ts-loader": "^7.0.2",
     "typescript": "^3.8.3",
