@@ -15,6 +15,7 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
+    "@types/google-apps-script": "^1.0.14",
     "archiver": "^4.0.1",
     "clasp": "^1.0.0",
     "mongodb": "^3.5.7",
