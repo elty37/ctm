@@ -1,0 +1,9 @@
+function onOpen(){
+
+    SpreadsheetApp
+        .getActiveSpreadsheet()
+        .addMenu(
+            "開発",
+            JSON.parse('@menuJsonString')); //メニューを追加
+
+}

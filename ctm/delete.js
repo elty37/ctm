@@ -9,6 +9,73 @@ const path = require('path');
 const fs = require('fs');
 const archiver = require('archiver');
 
+/**
+ * deleteMenu - メニューから削除
+ * @param functionName アクション名(ツール名と同じ)
+ * @return void 返り値なし
+ */
+function deleteMenu(functionName) {
+
+  //入力チェック
+
+  if (typeof functionName !== "string" || functionName.length < 1) {
+    //不正な関数名(数時スタートとか)はどうせ検索しても引っかからないので文字長だけチェック
+    throw new Error("ツール名は１文字以上を指定してください。");
+  }
+
+  // メニュー用JSONを取り込む
+  let myMenuTemplate = fs.readFileSync(
+      path.resolve(
+          __dirname,
+          "resources",
+          "FrontController.js.template"
+      ),
+      'utf8'
+  );
+
+  // メニュー用JSONを取り込む
+  let myMenu = JSON.parse(
+      fs.readFileSync(
+          path.resolve(
+              __dirname,
+              "resources",
+              "menu.json"
+          ),
+          'utf8')
+  );
+
+  for (let i = 0; i < myMenu.length; i++) {
+    if (myMenu[i]["functionName"] === functionName) {
+      myMenu.splice(i, 1);
+    }
+  }
+
+  // ファイルに出力
+  fs.writeFileSync(
+      path.resolve(__dirname, '../build', 'FrontController.js'),
+      myMenuTemplate.replace("@menuJsonString", JSON.stringify(myMenu)),
+      (err) => {
+        // 書き出しに失敗した場合
+        if(err){
+          console.error("エラーが発生しました。" + err)
+          throw err
+        }
+      }
+  );
+
+  // menu.jsonも更新
+  fs.writeFileSync(
+      path.resolve(__dirname, 'resources', 'menu.json'),
+      JSON.stringify(myMenu),
+      (err) => {
+        // 書き出しに失敗した場合
+        if(err){
+          console.error("エラーが発生しました。" + err)
+          throw err
+        }
+      }
+  );
+}
 
 /**
  * zipAndDeleteFiles - ツール圧縮＆削除処理
@@ -214,6 +281,7 @@ function validateToolName(list, name) {
   }
 
   deleteApp(list, name);
+  deleteMenu(name);
   console.log("削除が完了しました。\n 実ソースは圧縮され、archiveフォルダに移動されました。");
 
   return 0;

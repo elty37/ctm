@@ -5,7 +5,7 @@
   "main": "./src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
+    "build": "node ctm/beforeBuild.js && webpack && node ctm/afterBuild.js",
     "create": "node ctm/add.js",
     "delete": "node ctm/delete.js"
   },
