@@ -187,6 +187,10 @@ function setNewApp(list, toolName, toolEntryPointFileName) {
       if (err) { throw err; }
   });
 
+  fs.mkdirSync(path.resolve(__dirname, '../src', toolName, 'resources'), (err) => {
+      if (err) { throw err; }
+  });
+
   fs.copyFileSync(
     path.resolve(__dirname, 'defaultEntryPoint.js'),
     path.resolve(__dirname, '../src', toolName, toolEntryPointFileName),
