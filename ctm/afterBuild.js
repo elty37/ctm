@@ -52,6 +52,22 @@ function convertScriptToGasExecutableFormat() {
 
 }
 
+function copyResourceFiles() {
+  let list = JSON.parse(fs.readFileSync("./ctm/resources/app.json", "utf8"));
+  let currentKey = [];
+  const dist = "./build";
+  let src = "";
+  let fileList = [];
+
+  for (let i = 0; i < toolNameList.length; i++) {
+    currentKey = toolNameList[i];
+    src = "./src" + currentKey + "/resources/";
+    fileList = fs.readdirSync(src);
+    for (let j = 0; j < fileList.length; j++) {
+      fs.copyFileSync(src + fileList[j], dest + currentKey + "_" + fileList[j]);
+    }
+  }
+}
 
 /**
  * main - メイン処理
@@ -61,6 +77,7 @@ function convertScriptToGasExecutableFormat() {
 (async function main() {
   console.log("ビルド後スクリプト実行開始...");
   convertScriptToGasExecutableFormat();
+  copyResourceFiles();
   console.log("ビルド後スクリプト実行完了!");
   return 0;
 })();
