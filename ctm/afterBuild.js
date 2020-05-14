@@ -7,7 +7,8 @@
  * @author elty
  */
 
-const fs = require('fs');
+ const fs = require('fs');
+ const path = require('path');
 
 /**
  * 指定したアクション名で一つのメソッドとして纏める.
@@ -64,6 +65,27 @@ function copyResourceFiles() {
   }
 }
 
+
+/**
+ * resetBuildJson - build.jsonを初期化します
+ *
+ * @return {void}  返り値なし
+ */
+function resetBuildJson() {
+  // ファイルに出力
+  fs.writeFileSync(
+      path.resolve(__dirname, 'resources', 'build.json'),
+      JSON.stringify({}),
+      (err) => {
+        // 書き出しに失敗した場合
+        if(err){
+          console.error("エラーが発生しました。" + err)
+          throw err
+        }
+      }
+  );
+}
+
 /**
  * main - メイン処理
  *
@@ -73,6 +95,7 @@ function copyResourceFiles() {
   console.log("ビルド後スクリプト実行開始...");
   convertScriptToGasExecutableFormat();
   copyResourceFiles();
+  resetBuildJson();
   console.log("ビルド後スクリプト実行完了!");
   return 0;
 })();

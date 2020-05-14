@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
-const toolList = JSON.parse(fs.readFileSync("./ctm/resources/app.json", 'utf8'));
+
+const toolList = JSON.parse(fs.readFileSync("./ctm/resources/build.json", 'utf8'));
 
 module.exports = {
   mode: 'none',
