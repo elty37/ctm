@@ -2,7 +2,7 @@
  * ツール追加用バッチ
  * webpack用jsonにツール名とエントリポイントを追加し、
  * src配下にツール名のフォルダとエントリポイントのjs or tsファイルを設置する.
- * @author elty 
+ * @author elty
  */
 
 const path = require('path');
@@ -11,7 +11,7 @@ const fs = require('fs');
 /**
  * insertMenu - メニューに追加
  * @param name {string} メニュー表示名
- * @param functionName アクション名
+ * @param functionName {string} アクション名
  * @return void 返り値なし
  */
 function insertMenu(name, functionName) {
@@ -288,7 +288,7 @@ function validateActionName(name) {
   const list = getAppList();
 
   const name = await readUserInput(
-    'ツール名を入力してください.(半角英数字.数字開始は不可) \n' +
+    '[1]ツール名を入力してください.(半角英数字.数字開始は不可) \n' +
     ':'
   );
   let errorMessages = validateToolName(list, name);
@@ -298,7 +298,7 @@ function validateActionName(name) {
   }
 
   let useTs = await readUserInput(
-    'typescriptを使用しますか？[Y/N] (default: Y) \n' +
+    '[2]typescriptを使用しますか？[Y/N] (default: Y) \n' +
     ':'
   );
   errorMessages = validateTsFlag(useTs);
@@ -309,7 +309,7 @@ function validateActionName(name) {
   useTs = useTs.length < 1 ? "Y" : useTs;
 
   let entryPointName = await readUserInput(
-    'エントリーポイントのファイル名を入力してください(拡張子なし) \n' +
+    '[3]エントリーポイントのファイル名を入力してください(拡張子なし) \n' +
     '(default: index) \n' +
     ':'
   );
@@ -322,7 +322,7 @@ function validateActionName(name) {
   entryPointName += useTs === "Y" ? ".ts" : ".js";
 
   let menuName = await readUserInput(
-      '拡張メニューに表示するタイトルを入力してください\n' +
+      '[4]拡張メニューに表示するタイトルを入力してください\n' +
       '(必須) \n' +
       ':'
   );
@@ -332,11 +332,23 @@ function validateActionName(name) {
     return -1;
   }
 
+  let actionName = await readUserInput(
+      '[5]拡張メニューから実行されるアクション名を入力してください。(default:[1])\n' +
+      ':'
+  );
+  errorMessages = validateActionName(actionName);
+  if (errorMessages.length > 0) {
+    printErrorMessages(errorMessages);
+    return -1;
+  }
+  actionName = actionName.length < 1 ? name : actionName;
+
   let confirm = await readUserInput(
     'ツール名: ' + name + "\n" +
       'typescriptを使用するか: ' + useTs + "\n" +
-      'エントリーポイント名: ' + entryPointName + "\n" +
+      'ビルド時のエントリーポイント名: ' + entryPointName + "\n" +
       'メニュー名: ' + menuName + "\n" +
+      'メニューから実行されるアクション名: ' + actionName + "\n" +
     '以上でよろしいですか？[Nなら終了] \n' +
     ':'
   );
@@ -348,7 +360,7 @@ function validateActionName(name) {
   list[name] = filePath;
 
   setNewApp(list, name, entryPointName);
-  insertMenu(menuName, name);
+  insertMenu(menuName, actionName);
   console.log("登録が完了しました。\n エントリポイント: " + filePath);
 
   return 0;
