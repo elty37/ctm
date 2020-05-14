@@ -21,7 +21,7 @@
 function convertScriptToGasExecutableFormat() {
 
   // メニュー用JSONを取り込む
-  let appList = JSON.parse(fs.readFileSync("./ctm/resources/app.json", 'utf8'));
+  let appList = JSON.parse(fs.readFileSync("./ctm/resources/build.json", 'utf8'));
   let buildActionList = JSON.parse(fs.readFileSync("./ctm/resources/buildAction.json", 'utf8'));
   let script = "";
 
@@ -48,7 +48,7 @@ function convertScriptToGasExecutableFormat() {
 }
 
 function copyResourceFiles() {
-  let list = JSON.parse(fs.readFileSync("./ctm/resources/app.json", "utf8"));
+  let list = JSON.parse(fs.readFileSync("./ctm/resources/build.json", "utf8"));
   let currentKey = [];
   const dist = "./build";
   let src = "";
