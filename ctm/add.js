@@ -11,6 +11,50 @@ const fs = require('fs');
 /**
  * insertMenu - メニューに追加
  * @param name {string} メニュー表示名
+ * @param functionName {string} ビルドアクション名
+ * @return void 返り値なし
+ */
+function setBuildAction(name, functionName) {
+
+  //入力チェック
+
+  if (typeof functionName !== "string" || functionName.length < 1) {
+    //不正な関数名(数時スタートとか)はどうせ検索しても引っかからないので文字長だけチェック
+    throw new Error("ビルドアクション名は１文字以上を指定してください。");
+  }
+
+
+  // メニュー用JSONを取り込む
+  let myBuildAction = JSON.parse(
+      fs.readFileSync(
+          path.resolve(
+              __dirname,
+              "resources",
+              "buildAction.json"
+          ),
+          'utf8')
+  );
+
+  // buildActon追加
+  myBuildAction[name] = functionName;
+
+  // buildActon.json更新
+  fs.writeFileSync(
+      path.resolve(__dirname, 'resources', 'buildAction.json'),
+      JSON.stringify(myBuildAction),
+      (err) => {
+        // 書き出しに失敗した場合
+        if(err){
+          console.error("エラーが発生しました。" + err)
+          throw err
+        }
+      }
+  );
+}
+
+/**
+ * insertMenu - メニューに追加
+ * @param name {string} メニュー表示名
  * @param functionName {string} アクション名
  * @return void 返り値なし
  */
@@ -223,7 +267,6 @@ function validateTsFlag(flag) {
 /**
  * validateEntryPointName - ツールエントリポイント入力値チェック
  *
- * @param  {object} list ツール一覧
  * @param  {string} name 入力されたエントリポイント名
  * @return {string[]}    エラー文言
  */
@@ -239,6 +282,28 @@ function validateEntryPointName(name) {
   }
   if (name[0].match(/^[0-9]*$/) !== null) {
     res.push("エントリーポイントは半角英字から開始してください。");
+  }
+  return res;
+}
+
+/**
+ * validateBuildActionName - ビルドアクション名入力値チェック
+ *
+ * @param  {string} name 入力されたビルドアクション名
+ * @return {string[]}    エラー文言
+ */
+function validateBuildActionName(name) {
+  const res = [];
+  if (name.length < 1) {
+    return res;
+  }
+
+  const fileNameStr = name.match(/^[A-Za-z0-9]*$/);
+  if (fileNameStr === null) {
+    res.push("ビルドアクション名には半角英数字を指定してください。");
+  }
+  if (name[0].match(/^[0-9]*$/) !== null) {
+    res.push("ビルドアクション名は半角英字から開始してください。");
   }
   return res;
 }
@@ -309,7 +374,7 @@ function validateActionName(name) {
   useTs = useTs.length < 1 ? "Y" : useTs;
 
   let entryPointName = await readUserInput(
-    '[3]エントリーポイントのファイル名を入力してください(拡張子なし) \n' +
+    '[3]webpack実行時のルートとなるファイル名を入力してください(拡張子なし) \n' +
     '(default: index) \n' +
     ':'
   );
@@ -321,8 +386,21 @@ function validateActionName(name) {
   entryPointName = entryPointName.length < 1 ? "index" : entryPointName;
   entryPointName += useTs === "Y" ? ".ts" : ".js";
 
+  let buildActionName = await readUserInput(
+    '[4]ビルドアクション名を入力してください(default:[1]) \n' +
+    '(default: index) \n' +
+    ':'
+  );
+  errorMessages = validateBuildActionName(buildActionName);
+  if (errorMessages.length > 0) {
+    printErrorMessages(errorMessages);
+    return -1;
+  }
+  buildActionName = buildActionName.length < 1 ? name : buildActionName;
+
+
   let menuName = await readUserInput(
-      '[4]拡張メニューに表示するタイトルを入力してください\n' +
+      '[5]拡張メニューに表示するタイトルを入力してください\n' +
       '(必須) \n' +
       ':'
   );
@@ -333,7 +411,7 @@ function validateActionName(name) {
   }
 
   let actionName = await readUserInput(
-      '[5]拡張メニューから実行されるアクション名を入力してください。(default:[1])\n' +
+      '[6]拡張メニューから実行されるアクション名を入力してください。(default:[1])\n' +
       ':'
   );
   errorMessages = validateActionName(actionName);
@@ -344,11 +422,12 @@ function validateActionName(name) {
   actionName = actionName.length < 1 ? name : actionName;
 
   let confirm = await readUserInput(
-    'ツール名: ' + name + "\n" +
-      'typescriptを使用するか: ' + useTs + "\n" +
-      'ビルド時のエントリーポイント名: ' + entryPointName + "\n" +
-      'メニュー名: ' + menuName + "\n" +
-      'メニューから実行されるアクション名: ' + actionName + "\n" +
+    '[1]ツール名: ' + name + "\n" +
+      '[2]typescriptを使用するか: ' + useTs + "\n" +
+      '[3]webpack実行時のルートファイル名: ' + entryPointName + "\n" +
+      '[4]ビルドアクション名: ' + buildActionName + "\n" +
+      '[5]メニュー名: ' + menuName + "\n" +
+      '[6]メニューから実行されるアクション名: ' + actionName + "\n" +
     '以上でよろしいですか？[Nなら終了] \n' +
     ':'
   );
@@ -361,6 +440,7 @@ function validateActionName(name) {
 
   setNewApp(list, name, entryPointName);
   insertMenu(menuName, actionName);
+  setBuildAction(name, buildActionName);
   console.log("登録が完了しました。\n エントリポイント: " + filePath);
 
   return 0;

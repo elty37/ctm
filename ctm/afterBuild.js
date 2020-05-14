@@ -20,25 +20,20 @@ const fs = require('fs');
 function convertScriptToGasExecutableFormat() {
 
   // メニュー用JSONを取り込む
-  let menuList = JSON.parse(fs.readFileSync("./ctm/resources/menu.json", 'utf8'));
-
-  if (menuList.length < 1) {
-    throw new Error("[System Error] メニューファイルが異常です。");
-  }
-
+  let appList = JSON.parse(fs.readFileSync("./ctm/resources/app.json", 'utf8'));
+  let buildActionList = JSON.parse(fs.readFileSync("./ctm/resources/buildAction.json", 'utf8'));
   let script = "";
 
-  for (let i = 0; i < menuList.length; i++) {
-    if (typeof menuList[i].functionName.length === "undefined" || menuList[i].functionName.length < 1) {
-      throw new Error("[System Error] メニューファイルのアクション名が未定義です。");
+  const menuList = Object.keys(appList);
+  for (let i = 0; i< menuList.length; i++) {
+    script = fs.readFileSync("./build/" + menuList[i] + ".bundle.js", 'utf8');
+    if (typeof buildActionList[menuList[i]] !== "string" || buildActionList[menuList[i]].length < 1) {
+      throw new Error("buildAction.jsonが不正です。");
     }
-
-    script = fs.readFileSync("./build/" + menuList[i].functionName + ".bundle.js", 'utf8');
-    script = "function " + menuList[i].functionName + "() { \n" + script + "\n}";
-
+    script = "function " + buildActionList[menuList[i]] + "() { \n" + script + "\n}";
     // ファイルに出力
     fs.writeFileSync(
-        "./build/" + menuList[i].functionName + ".bundle.js",
+        "./build/" + menuList[i] + ".bundle.js",
         script,
         (err) => {
           // 書き出しに失敗した場合
@@ -49,7 +44,6 @@ function convertScriptToGasExecutableFormat() {
         }
     );
   }
-
 }
 
 function copyResourceFiles() {
@@ -58,10 +52,11 @@ function copyResourceFiles() {
   const dist = "./build";
   let src = "";
   let fileList = [];
+  let toolNameList = Object.keys(list);
 
   for (let i = 0; i < toolNameList.length; i++) {
     currentKey = toolNameList[i];
-    src = "./src" + currentKey + "/resources/";
+    src = "./src/" + currentKey + "/resources/";
     fileList = fs.readdirSync(src);
     for (let j = 0; j < fileList.length; j++) {
       fs.copyFileSync(src + fileList[j], dest + currentKey + "_" + fileList[j]);
